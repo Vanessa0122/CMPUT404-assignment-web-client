@@ -22,7 +22,7 @@ import sys
 import socket
 import re
 # you may use urllib to encode data appropriately
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode
 
 def help():
     print("httpclient.py [GET/POST] [URL]\n")
@@ -58,7 +58,6 @@ class HTTPClient(object):
         return ''.join(content[index_of_new_line:])
 
 
-    
     def sendall(self, data):
         self.socket.sendall(data.encode('utf-8'))
         
@@ -77,16 +76,6 @@ class HTTPClient(object):
                 done = not part
         return buffer.decode('utf-8')
 
-    def request_builder(self, method, path, headers):
-        payload = '{} {} HTTP/1.1\r\n'.format(method, path)
-
-        for key, value in headers.items():
-            payload += '{}: {}\r\n'.format(key, value)
-
-        payload += '\r\n'
-
-        
-        return payload
 
     def GET(self, url, args=None):
         port, host, path = self.url_split(url)
@@ -96,7 +85,7 @@ class HTTPClient(object):
             'Accept': '*/*'
         }
 
-        request = self.request_builder('GET', path, headers)
+        request = self.request_builder('GET', path, headers, None)
         self.connect(host, port)
         self.sendall(request)
         data = self.recvall(self.socket)
@@ -106,9 +95,40 @@ class HTTPClient(object):
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        code = 500
-        body = ""
+        port, host, path = self.url_split(url)
+        headers = {
+            'Host': '{}'.format(host),
+            'User-Agent': 'curl/7.54.0',
+            'Accept': '*/*'
+        }
+        if args:
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+            headers['Content-Length'] = len(urlencode(args))
+        else:
+            headers['Content-Type'] = 'application/x-www-form-urlencoded'
+            headers['Content-Length'] = 0
+        request = self.request_builder('POST', path, headers, args)
+        self.connect(host, port)
+        self.sendall(request)
+        data = self.recvall(self.socket)
+        self.close()
+        code = self.get_code(data)
+        body = self.get_body(data)
+        print(body)
         return HTTPResponse(code, body)
+
+    def request_builder(self, method, path, headers, body):
+        payload = '{} {} HTTP/1.1\r\n'.format(method, path)
+        for key, value in headers.items():
+            payload += '{}: {}\r\n'.format(key, value)
+        payload += '\r\n'
+        if body:
+            if type(body) == dict:
+                payload += urlencode(body)
+            else: 
+                payload += body
+        return payload
+
 
     def command(self, url, command="GET", args=None):
         if (command == "POST"):
@@ -123,7 +143,6 @@ class HTTPClient(object):
         path = parsed_url.path
         host = parsed_url.hostname
         port = parsed_url.port
-
         if not path:
             path = '/'
         return port, host, path
