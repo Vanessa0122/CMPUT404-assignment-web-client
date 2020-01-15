@@ -22,7 +22,7 @@ import sys
 import socket
 import re
 # you may use urllib to encode data appropriately
-from urllib.parse import urlsplit
+from urllib.parse import urlparse
 
 def help():
     print("httpclient.py [GET/POST] [URL]\n")
@@ -40,16 +40,24 @@ class HTTPClient(object):
 
     def get_code(self, data):
         #Version, code, message 
-        code = int(data.splitlines()[0].split(' '))
-        print("CODE: ", code)
-        return code 
+        code = data.splitlines()[0].split(' ')[1]
+        return int(code) 
 
     def get_headers(self,data):
         headers = data.split('\r\n\r\n')[0]
         return headers 
 
     def get_body(self, data):
-        return None
+        content = data.splitlines()
+        index_of_new_line = 0 
+        for element in content:
+            index_of_new_line += 1
+            if not element:
+                break
+        # content will be everything comming after the new line 
+        return ''.join(content[index_of_new_line:])
+
+
     
     def sendall(self, data):
         self.socket.sendall(data.encode('utf-8'))
@@ -92,6 +100,10 @@ class HTTPClient(object):
         self.connect(host, port)
         self.sendall(request)
         data = self.recvall(self.socket)
+        self.close()
+        code = self.get_code(data)
+        body = self.get_body(data)
+        return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
         code = 500
@@ -107,20 +119,14 @@ class HTTPClient(object):
     def url_split(self, url):
         # URL looks like this: <scheme>://<netloc>/<path>;<params>?<query>#<fragment>
         #https://github.com/python/cpython/blob/3.8/Lib/http/client.py#L1115     
-        #SplitResult(scheme='http', netloc='www.google.com', path='', query='', fragment='')
-        protocol, host, path = urlsplit(url)[:3]  #Cut off query and fragment
-        if path == '':
+        parsed_url = urlparse(url)
+        path = parsed_url.path
+        host = parsed_url.hostname
+        port = parsed_url.port
+
+        if not path:
             path = '/'
-
-        #By default, HTTP uses port 80 and HTTPS uses port 443
-        if protocol == 'http':
-            port = 80
-        elif protocol == 'https':             #But do we need to take care of https?
-            port = 443
-        else:
-            raise ValueError('Invalid protocol. Instruction: Enter a website with http protocol.')
         return port, host, path
-
 
 if __name__ == "__main__":
     client = HTTPClient()
