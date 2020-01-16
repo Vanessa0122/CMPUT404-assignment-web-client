@@ -79,14 +79,12 @@ class HTTPClient(object):
 
 
     def GET(self, url, args=None):
-        print("URL WAS: ", url)
         #NOTE: socket.gethostbyname() does not support IPV6 addresses.
-        #To get IPV6 address through host name, use socket.getinfo. 
+        #To get IPV6 address through host name, use socket.getaddrinfo. 
         if type(url) == str:
-            port, host, path = self.str_url_splitter(url)
+            port, host, path = self.url_splitter(url)
         else: 
-            port, host, path = self.int_url_splitter(url)
-        print("HOST AND PORT:", host, port)
+            port, host, path = self.url_splitter(url)
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
@@ -104,7 +102,7 @@ class HTTPClient(object):
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        port, host, path = self.int_url_splitter(url)
+        port, host, path = self.url_splitter(url)
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
@@ -145,30 +143,14 @@ class HTTPClient(object):
         else:
             return self.GET( url, args )
     
-    def int_url_splitter(self, url):
-        # URL looks like this: <scheme>://<netloc>/<path>;<params>?<query>#<fragment>
-        #https://github.com/python/cpython/blob/3.8/Lib/http/client.py#L1115     
+    def url_splitter(self, url):
         parsed_url = urlparse(url)
+        #TODO: ASK!! What if there is an IPV6 Address? You can't use gethostbyname for IPV6 addresses 
         path = parsed_url.path
+        port = parsed_url.port
         host = parsed_url.hostname
-        port = parsed_url.port
-        if not port:
-            port = 80
-        if not path:
-            path = '/'
-        return port, host, path
-
-    def str_url_splitter(self, url):
-        parsed_url = urlparse(url)
-        #TODO: What if there is an IPV6 Address
-        path = parsed_url.path
-        port = parsed_url.port
-        host = parsed_url.netloc
-        if ':' in host:
-            host = host.split(':')[0]
 
         host_IP  = socket.gethostbyname(host)
-        print(host_IP)
         
         if not port:
             port = 80
@@ -178,7 +160,6 @@ class HTTPClient(object):
         #TODO: ASK!! If it's a static website, just return a / for path ? 
         elif path.startswith('/static'):
             path = '/'
-        print("Returned this: ", port, host_IP, path)
         return port, host_IP, path 
 
 if __name__ == "__main__":
