@@ -21,6 +21,7 @@
 import sys
 import socket
 import re
+import ipaddress
 # you may use urllib to encode data appropriately
 from urllib.parse import urlparse, urlencode
 
@@ -78,7 +79,14 @@ class HTTPClient(object):
 
 
     def GET(self, url, args=None):
-        port, host, path = self.url_split(url)
+        print("URL WAS: ", url)
+        #NOTE: socket.gethostbyname() does not support IPV6 addresses.
+        #To get IPV6 address through host name, use socket.getinfo. 
+        if type(url) == str:
+            port, host, path = self.str_url_splitter(url)
+        else: 
+            port, host, path = self.int_url_splitter(url)
+        print("HOST AND PORT:", host, port)
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
@@ -86,6 +94,7 @@ class HTTPClient(object):
         }
 
         request = self.request_builder('GET', path, headers, None)
+
         self.connect(host, port)
         self.sendall(request)
         data = self.recvall(self.socket)
@@ -95,7 +104,7 @@ class HTTPClient(object):
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
-        port, host, path = self.url_split(url)
+        port, host, path = self.int_url_splitter(url)
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
@@ -136,7 +145,7 @@ class HTTPClient(object):
         else:
             return self.GET( url, args )
     
-    def url_split(self, url):
+    def int_url_splitter(self, url):
         # URL looks like this: <scheme>://<netloc>/<path>;<params>?<query>#<fragment>
         #https://github.com/python/cpython/blob/3.8/Lib/http/client.py#L1115     
         parsed_url = urlparse(url)
@@ -146,6 +155,28 @@ class HTTPClient(object):
         if not path:
             path = '/'
         return port, host, path
+
+    def str_url_splitter(self, url):
+        parsed_url = urlparse(url)
+        #port = 80 #TODO: Do I have to hardcode the port for IPV6 addresses?????? 
+        path = parsed_url.path
+        port = parsed_url.port
+        #TODO: Cite this page properly 
+        #https://stackoverflow.com/questions/15373288/python-resolve-a-host-name-with-ipv6-address
+        host = socket.getaddrinfo(parsed_url.hostname, 80, socket.AF_INET6)[0][4][0]
+        split_result = host.split(':')
+        host = split_result[3]
+
+        if not port:
+            port = 80
+        #TODO: ASK!!! Does IP version matter? 
+        if not path:
+            path = '/'
+        #TODO: ASK!! If it's a static website, just return a / for path ? 
+        elif path.startswith('/static'):
+            path = '/'
+        print("Returned this: ", port, host, path)
+        return port, host, path 
 
 if __name__ == "__main__":
     client = HTTPClient()
