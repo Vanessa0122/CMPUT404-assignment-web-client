@@ -152,21 +152,24 @@ class HTTPClient(object):
         path = parsed_url.path
         host = parsed_url.hostname
         port = parsed_url.port
+        if not port:
+            port = 80
         if not path:
             path = '/'
         return port, host, path
 
     def str_url_splitter(self, url):
         parsed_url = urlparse(url)
-        #port = 80 #TODO: Do I have to hardcode the port for IPV6 addresses?????? 
+        #TODO: What if there is an IPV6 Address
         path = parsed_url.path
         port = parsed_url.port
-        #TODO: Cite this page properly 
-        #https://stackoverflow.com/questions/15373288/python-resolve-a-host-name-with-ipv6-address
-        host = socket.getaddrinfo(parsed_url.hostname, 80, socket.AF_INET6)[0][4][0]
-        split_result = host.split(':')
-        host = split_result[3]
+        host = parsed_url.netloc
+        if ':' in host:
+            host = host.split(':')[0]
 
+        host_IP  = socket.gethostbyname(host)
+        print(host_IP)
+        
         if not port:
             port = 80
         #TODO: ASK!!! Does IP version matter? 
@@ -175,8 +178,8 @@ class HTTPClient(object):
         #TODO: ASK!! If it's a static website, just return a / for path ? 
         elif path.startswith('/static'):
             path = '/'
-        print("Returned this: ", port, host, path)
-        return port, host, path 
+        print("Returned this: ", port, host_IP, path)
+        return port, host_IP, path 
 
 if __name__ == "__main__":
     client = HTTPClient()
