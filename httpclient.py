@@ -81,10 +81,8 @@ class HTTPClient(object):
     def GET(self, url, args=None):
         #NOTE: socket.gethostbyname() does not support IPV6 addresses.
         #To get IPV6 address through host name, use socket.getaddrinfo. 
-        if type(url) == str:
-            port, host, path = self.url_splitter(url)
-        else: 
-            port, host, path = self.url_splitter(url)
+        port, host, path = self.url_splitter(url)
+
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
@@ -149,17 +147,18 @@ class HTTPClient(object):
         path = parsed_url.path
         port = parsed_url.port
         host = parsed_url.hostname
-
+        query = parsed_url.query
         host_IP  = socket.gethostbyname(host)
         
         if not port:
             port = 80
-        #TODO: ASK!!! Does IP version matter? 
         if not path:
             path = '/'
-        #TODO: ASK!! If it's a static website, just return a / for path ? 
+        #If the website is static, return root 
         elif path.startswith('/static'):
             path = '/'
+        if query: 
+            path += '?'+query
         return port, host_IP, path 
 
 if __name__ == "__main__":
