@@ -86,7 +86,8 @@ class HTTPClient(object):
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
-            'Accept': '*/*'
+            'Accept': '*/*',
+            'Connection': 'close'
         }
 
         request = self.request_builder('GET', path, headers, None)
@@ -104,7 +105,8 @@ class HTTPClient(object):
         headers = {
             'Host': '{}'.format(host),
             'User-Agent': 'curl/7.54.0',
-            'Accept': '*/*'
+            'Accept': '*/*',
+            'Connection': 'close'
         }
         if args:
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
