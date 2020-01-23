@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding: utf-8
-# Copyright 2016 Abram Hindle, https://github.com/tywtyw2002, and https://github.com/treedust
+# Copyright 2016 Abram Hindle, https://github.com/tywtyw2002,  https://github.com/treedust, and Vanessa Peng
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,10 +130,7 @@ class HTTPClient(object):
             payload += '{}: {}\r\n'.format(key, value)
         payload += '\r\n'
         if body:
-            if type(body) == dict:
-                payload += urlencode(body)
-            else: 
-                payload += body
+            payload += urlencode(body)
         return payload
 
 
@@ -150,7 +147,6 @@ class HTTPClient(object):
         port = parsed_url.port
         host = parsed_url.hostname
         query = parsed_url.query
-        host_IP  = socket.gethostbyname(host)
         
         if not port:
             port = 80
@@ -161,7 +157,7 @@ class HTTPClient(object):
             path = '/'
         if query: 
             path += '?'+query
-        return port, host_IP, path 
+        return port, host, path 
 
 if __name__ == "__main__":
     client = HTTPClient()
