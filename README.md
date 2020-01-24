@@ -23,5 +23,9 @@ compatible) http://docs.python.org/2/library/socketserver.html
 References
 ========================
 
+Real Python 
+
+Socket Programming in Python (Guide) by Nathan Jennings
+
 https://realpython.com/python-sockets/#echo-client
 
