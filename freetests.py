@@ -154,6 +154,7 @@ class TestHTTPClient(unittest.TestCase):
             print("run_server: Thread died")
 
 
+
     def test404GET(self):
         '''Test against 404 errors'''
         MyHTTPHandler.get = nothing_available
@@ -191,7 +192,7 @@ class TestHTTPClient(unittest.TestCase):
         req = http.GET( url )
         self.assertTrue(req != None, "None Returned!")
         self.assertTrue(req.code == 200)
-        
+
     def testPOSTHeaders(self):
         '''Test HTTP POST Headers'''
         MyHTTPHandler.post = post_header_check
@@ -204,7 +205,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertTrue(req.code == 200,"Code is %s but I wanted a 200 OK" % req.code)
 
         
-    #TODO: This test     
+        
     # consider disabling this test until everything else works
     def testInternetGets(self):
         '''Test HTTP Get in the wild, these webservers are far less
@@ -213,7 +214,7 @@ class TestHTTPClient(unittest.TestCase):
         http = httpclass.HTTPClient()        
         urls = [
             "http://www.cs.ualberta.ca/",
-            "http://softwareprocess.es/static/SoftwareProcess.es.html"
+            "http://softwareprocess.es/static/SoftwareProcess.es.html",
             "http://c2.com/cgi/wiki?CommonLispHyperSpec",
             "http://slashdot.org"
             ]
@@ -264,7 +265,6 @@ class TestHTTPClient(unittest.TestCase):
             time.sleep(1)
 
 def test_test_webserver():
-    print("Just testing: ", BASEHOST, BASEPORT)
     print("http://%s:%d/dsadsadsadsa\n" % (BASEHOST,BASEPORT) )
     MyHTTPHandler.get = echo_path_get
     MyHTTPHandler.post = echo_post

@@ -131,6 +131,8 @@ class HTTPClient(object):
         payload += '\r\n'
         if body:
             payload += urlencode(body)
+
+        print(payload)
         return payload
 
 
@@ -142,7 +144,6 @@ class HTTPClient(object):
     
     def url_splitter(self, url):
         parsed_url = urlparse(url)
-        #TODO: ASK!! What if there is an IPV6 Address? You can't use gethostbyname for IPV6 addresses 
         path = parsed_url.path
         port = parsed_url.port
         host = parsed_url.hostname
