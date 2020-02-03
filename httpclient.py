@@ -21,8 +21,6 @@
 import sys
 import socket
 import re
-import ipaddress
-# you may use urllib to encode data appropriately
 from urllib.parse import urlparse, urlencode
 
 def help():
@@ -65,7 +63,6 @@ class HTTPClient(object):
     def close(self):
         self.socket.close()
 
-    # read everything from the socket
     def recvall(self, sock):
         buffer = bytearray()
         done = False
@@ -79,8 +76,6 @@ class HTTPClient(object):
 
 
     def GET(self, url, args=None):
-        #NOTE: socket.gethostbyname() does not support IPV6 addresses.
-        #To get IPV6 address through host name, use socket.getaddrinfo. 
         port, host, path = self.url_splitter(url)
 
         headers = {
@@ -98,6 +93,7 @@ class HTTPClient(object):
         self.close()
         code = self.get_code(data)
         body = self.get_body(data)
+        print(body)
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
@@ -130,9 +126,8 @@ class HTTPClient(object):
             payload += '{}: {}\r\n'.format(key, value)
         payload += '\r\n'
         if body:
-            payload += urlencode(body)
+            payload += urlencode(body) 
 
-        print(payload)
         return payload
 
 
@@ -167,6 +162,6 @@ if __name__ == "__main__":
         help()
         sys.exit(1)
     elif (len(sys.argv) == 3):
-        print(client.command( sys.argv[2], sys.argv[1] ))
+        print(client.command( sys.argv[2], sys.argv[1] ).bodyh)
     else:
         print(client.command( sys.argv[1] ))
